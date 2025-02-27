@@ -32,11 +32,6 @@ public class JwtServiceImpl {
 
 		Date tokenValidity = new Date(System.currentTimeMillis() + jwtExpiration * 1000);
 
-//		String jwtString = Jwts.builder().setId(authentication.getName()).setExpiration(tokenValidity)
-//				.signWith(SignatureAlgorithm.HS256, jwtSecret).compact();
-//
-//		return jwtString;
-//		
 		UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 		
 		final String authorities = userPrincipal.getAuthorities().stream().map(GrantedAuthority::getAuthority)

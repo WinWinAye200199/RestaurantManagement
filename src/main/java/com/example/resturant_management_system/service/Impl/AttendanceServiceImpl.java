@@ -27,30 +27,4 @@ public class AttendanceServiceImpl implements AttendanceService {
     	return attendance;
     }
     
-//    @Override
-//    public List<Attendance> findByUser(User user) {
-//        return attendanceRepository.findByUser(user);
-//    }
-    
- // Mapping function for converting entity to DTO
-//    public List<AttendanceDto> getAttendanceRecordsByUser(UserPrincipal user) {
-//        List<Attendance> attendances = attendanceRepository.findByUser(user);
-//        List<AttendanceDto> attendanceDtos = new ArrayList<>();
-//
-//        for (Attendance attendance : attendances) {
-//            AttendanceDto attendanceDto = new AttendanceDto();
-//            attendanceDto.setId(attendance.getId());
-//            attendanceDto.setClockIn(attendance.getClockIn());
-//            attendanceDto.setClockOut(attendance.getClockOut());
-//            attendanceDto.setTotalHours(attendance.getTotalHours());
-//            attendanceDtos.add(attendanceDto);
-//        }
-//
-//        return attendanceDtos;
-//    }
-
-//	@Override
-//	public List<Attendance> findByUser(UserPrincipal currentUser) {
-//		 return attendanceRepository.findByUser(currentUser);
-//	}
 }

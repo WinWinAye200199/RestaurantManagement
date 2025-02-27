@@ -34,12 +34,6 @@ public class AttendanceMapperImpl implements AttendanceMapper{
 			AttendanceHistoryResponse response = new AttendanceHistoryResponse();
 			response.setId(attendanceDto.getId());
 			response.setDate(attendanceDto.getDate().toString());
-//			response.setStartTime(attendanceDto.getClockIn().toString());
-//			// Handle potential null value for clockOut
-//            response.setEndTime(Optional.ofNullable(attendanceDto.getClockOut())
-//                                        .map(Object::toString)
-//                                        .orElse("Not Clocked Out"));
-
 
 			if (attendanceDto.getClockIn() == null) {
                 response.setStatus("Absent");
@@ -56,7 +50,6 @@ public class AttendanceMapperImpl implements AttendanceMapper{
                 response.setDuration(attendanceDto.getTotalHours());
 	        }
 
-//			response.setStatus("Present");
 			responses.add(response);
 		}
 		return responses;
@@ -76,22 +69,6 @@ public class AttendanceMapperImpl implements AttendanceMapper{
 			dto.setClockIn(attendance.getClockIn());
 			dto.setClockOut(attendance.getClockOut());
 			dto.setTotalHours(attendance.getTotalHours());
-//			// Get shift start time from WorkSchedule (if available)
-//	        List<WorkScheduleResponse> workSchedules = adminService.getAllSchedules();
-//	        for(WorkScheduleResponse schedule: workSchedules) {
-//	        	if(schedule != null) {
-//	        		WorkScheduleDto workScheduleDto = new WorkScheduleDto();
-//	        		
-//	        	}
-//	        		
-//	        }
-//	        
-//	        
-//	        if (workSchedule != null) {
-//	            
-//	            workScheduleDto.setStartTime(workSchedule.getStartTime()); // Ensure WorkScheduleDto has this field
-//	            dto.setWorkSchedule(workScheduleDto);
-//	        }
 
 			dtos.add(dto);
 		}
@@ -110,14 +87,7 @@ public class AttendanceMapperImpl implements AttendanceMapper{
 			response.setId(attendanceDto.getId());
 			response.setName(attendanceDto.getName());
 			response.setDate(attendanceDto.getDate().toString());
-//			response.setStartTime(attendanceDto.getClockIn().toString());
-//			// Handle null for clockOut
-//            response.setEndTime(Optional.ofNullable(attendanceDto.getClockOut())
-//                                        .map(Object::toString)
-//                                        .orElse("Not Clocked Out"));
-//			response.setDuration(attendanceDto.getTotalHours());
-//			response.setStatus("Present");
-//			responses.add(response);
+
 			if (attendanceDto.getClockIn() == null) {
                 response.setStatus("Absent");
                 response.setStartTime("Not Clocked In");

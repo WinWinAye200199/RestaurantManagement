@@ -48,22 +48,6 @@ public class WebSecurityConfig {
 		return authenticationManager;
 	}
 
-//	@Bean
-//	 SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//		http.cors();
-//		http.csrf().disable();
-//		http.exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and()
-//		.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-//		.authorizeRequests(authorize -> authorize.antMatchers(HttpMethod.POST,"/api/auth/login")
-//				.permitAll()
-//				.antMatchers(HttpMethod.PUT,"/api/auth/reset-password")
-//				.permitAll()
-//				.antMatchers("/api/users/**").hasRole("ADMIN")
-//				.anyRequest().authenticated());
-//		http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-//	
-//		return http.build();
-//	}
 	@Bean
 	SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 	    http.cors();

@@ -32,6 +32,4 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
 	boolean existsByUserAndDate(User user, LocalDate date);
 
-//    @Query("SELECT SUM(TIMESTAMPDIFF(HOUR, a.clockIn, a.clockOut)) FROM Attendance a WHERE a.user.id = :userId")
-//    long calculateTotalHoursWorked(Long userId);
 }

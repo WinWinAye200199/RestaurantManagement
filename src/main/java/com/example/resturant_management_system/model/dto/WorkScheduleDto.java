@@ -19,8 +19,5 @@ public class WorkScheduleDto {
     private String managername; 
     private long attendanceId;
     private boolean finish;
-    
-//    public LocalTime getStartTime() { return startTime; }
-//    public void setStartTime(LocalTime startTime) { this.startTime = startTime; }
-
+   
 }

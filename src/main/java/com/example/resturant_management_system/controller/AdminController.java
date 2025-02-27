@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.resturant_management_system.model.request.UpdateUserRequest;
 import com.example.resturant_management_system.model.entities.User;
 import com.example.resturant_management_system.model.request.BasicSalaryRequest;
-import com.example.resturant_management_system.model.request.PaymentReportRequest;
 import com.example.resturant_management_system.model.request.UpdateLeaveRequest;
 import com.example.resturant_management_system.model.request.WorkScheduleRequest;
 import com.example.resturant_management_system.model.response.ApiResponse;

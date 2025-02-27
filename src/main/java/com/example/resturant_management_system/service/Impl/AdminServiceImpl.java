@@ -40,9 +40,9 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -78,21 +78,34 @@ public class AdminServiceImpl implements AdminService {
             response.setActive(user.isActive());
             response.setBasicSalary(user.getBasicSalary());
 
-            // Get next upcoming shift
-            workScheduleRepository.findNextUpcomingShift(user.getId(), today).ifPresent(schedule -> {
+            LocalTime currentTime = LocalTime.now(); // Get current time
+
+            List<WorkSchedule> upcomingShifts = workScheduleRepository.findNextUpcomingShifts(user.getId(), today, currentTime);
+
+            if (!upcomingShifts.isEmpty()) {
+                WorkSchedule schedule = upcomingShifts.get(0); // Get the first valid upcoming shift
                 String nextShift = String.format("%s, %s - %s", 
                         schedule.getDate(),
                         schedule.getStartTime(),
                         schedule.getEndTime());
                 response.setNextShift(nextShift);
-            });
+            } else {
+                response.setNextShift("No upcoming shift"); // No future shifts
+            }
+
 
             // Calculate attendance overview
             List<Attendance> attendanceList = attendanceRepository.findByUser_Id(user.getId());
-            long totalWorkedHours = 0;
+            double totalWorkedHours = 0.0;
             for (Attendance attendance : attendanceList) {
                 if (attendance.getClockIn() != null && attendance.getClockOut() != null) {
-                    totalWorkedHours += Duration.between(attendance.getClockIn(), attendance.getClockOut()).toHours();
+                	 Duration duration = Duration.between(attendance.getClockIn(), attendance.getClockOut());
+                     long hours = duration.toHours();
+                     long minutes = duration.toMinutesPart(); // Get only the minutes
+
+                     // Convert minutes to fraction of an hour (e.g., 15 mins → 0.25 hrs)
+                     double fractionalHours = minutes / 60.0;
+                     totalWorkedHours += hours + fractionalHours;
                 }
             }
             response.setTotalHoursWorked(totalWorkedHours);
@@ -152,11 +165,11 @@ public class AdminServiceImpl implements AdminService {
 		attendance.setDate(request.getDate());
 		attendance.setTotalHours(0);
 		attendance.setUser(user);
-		attendance.setWorkSchedule(savedSchedule); // Link Attendance to WorkSchedule ✅
+		attendance.setWorkSchedule(savedSchedule); // Link Attendance to WorkSchedule 
 
 		attendanceRepository.save(attendance);
-		savedSchedule.setAttendance(attendance); // Link WorkSchedule to Attendance ✅
-		workScheduleRepository.save(savedSchedule); // Save the updated WorkSchedule ✅
+		savedSchedule.setAttendance(attendance); // Link WorkSchedule to Attendance 
+		workScheduleRepository.save(savedSchedule); // Save the updated WorkSchedule 
      // Send an email to the assigned staff
         String emailSubject = "New Work Schedule Assigned";
         String emailBody = "Dear " + user.getName() + ",\n\n"
@@ -216,9 +229,6 @@ public class AdminServiceImpl implements AdminService {
 	    WorkSchedule schedule = workScheduleRepository.findById(shiftId)
 	            .orElseThrow(() -> new NotFoundException("Shift not found"));
 
-//	    User foundManager = userRepository.findById(currentUser.getId())
-//	            .orElseThrow(() -> new NotFoundException("Manager not found"));
-
 	    workScheduleRepository.delete(schedule);
 
 	    // Send email notification to staff
@@ -264,7 +274,7 @@ public class AdminServiceImpl implements AdminService {
 			leaveRequest.setStatus(request.getStatus());
 			leaveRequestRepository.save(leaveRequest);
 		}
-		User user = userRepository.getById(userId);
+		User user = userRepository.getById(leaveRequest.getUser().getId());
 		// Send email notification to staff
 	    String emailSubject = "Response Leave Request";
 	    String emailBody = "Dear " + user.getName() + ",\n\n"
@@ -276,34 +286,7 @@ public class AdminServiceImpl implements AdminService {
 		return new ApiResponse(true,"Updated Leave Request!");
 		
 	}
-	
-//	 /**
-//     * Calculate payment for a specific user over a period.
-//     */
-//    public double calculatePayment(Long userId, LocalDate start, LocalDate end) {
-//        List<WorkSchedule> schedules = workScheduleRepository.findByUserIdAndDateBetween(userId, start, end);
-//        
-//        double totalHours = schedules.stream()
-//            .mapToDouble(s -> Duration.between(s.getStartTime(), s.getEndTime()).toHours())
-//            .sum();
-//
-//        User user = userRepository.findById(userId)
-//            .orElseThrow(() -> new NotFoundException("User not found"));
-//
-//        return totalHours * user.getHourlyWage(); // Payment calculation
-//    }
-//	public double calculatePayment(Long userId, LocalDate start, LocalDate end) {
-//	    // Get the user
-//	    User user = userRepository.findById(userId)
-//	        .orElseThrow(() -> new NotFoundException("User not found"));
-//
-//	    // Get actual worked hours from Attendance table
-//	    Double totalHoursWorked = attendanceRepository.getTotalWorkedHours(userId, start, end);
-//	    totalHoursWorked = (totalHoursWorked != null) ? totalHoursWorked : 0.0;
-//
-//	    // Calculate payment
-//	    return totalHoursWorked * user.getHourlyWage();
-//	}
+
 	public double calculatePayment(Long userId, LocalDate start, LocalDate end) {
 	    User user = userRepository.findById(userId)
 	        .orElseThrow(() -> new NotFoundException("User not found"));
@@ -311,14 +294,18 @@ public class AdminServiceImpl implements AdminService {
 	    // Ensure basicSalary is not null
 	    double basicSalary = (user.getBasicSalary() != null) ? user.getBasicSalary() : 0.0;
 
-	    // Get total worked hours from attendance
-	    Double totalWorkedHours = attendanceRepository.getTotalWorkedHours(userId, start, end);
-	    if (totalWorkedHours == null) {
-	        totalWorkedHours = 0.0;
-	    }
+	 // Fetch attendance records within the date range
+        List<Attendance> attendanceRecords = attendanceRepository.findByUser_IdAndDateBetween(userId, start, end);
 
-	    return basicSalary * totalWorkedHours;
-//	    return basicSalary + (totalWorkedHours * user.getHourlyWage()); // Example: Fixed salary + overtime
+	 // Calculate total worked hours
+        double totalWorkedHours = attendanceRecords.stream()
+                .mapToDouble(Attendance::getTotalHours)
+                .sum();
+
+        // Calculate total salary
+        double totalSalary = totalWorkedHours * basicSalary;
+
+	    return totalSalary;
 	}
 
 
@@ -336,22 +323,7 @@ public class AdminServiceImpl implements AdminService {
     /**
      * Generate payment report for all users.
      */
-//    public List<PaymentReportResponse> generateOverallPaymentReport(String startDate, String endDate) {
-////    	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-////    	LocalDate start = LocalDate.parse(startDate, formatter);
-////        LocalDate end = LocalDate.parse(endDate, formatter);
-//        List<User> users = userRepository.findAll();
-//
-//        return users.stream()
-//            .map(user -> getPaymentReport(user.getId(), startDate, endDate))
-//            .collect(Collectors.toList());
-//    }
     public List<PaymentReportResponse> generateOverallPaymentReport(String startDate, String endDate) {
-        // Convert String to LocalDate
-//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-//        LocalDate start = LocalDate.parse(startDate, formatter);
-//        LocalDate end = LocalDate.parse(endDate, formatter);
-
 
     	List<User> users = userRepository.findByRole(Role.USER);
 

@@ -16,11 +16,5 @@ public class AttendanceDto {
     private LocalTime clockIn;
     private LocalTime clockOut;
     private double totalHours;
-//    private WorkScheduleDto workSchedule;
-//    
-//    public LocalTime getShiftStartTime() {
-//        return (workSchedule != null) ? workSchedule.getStartTime() : null;
-//    }
- 
 
 }

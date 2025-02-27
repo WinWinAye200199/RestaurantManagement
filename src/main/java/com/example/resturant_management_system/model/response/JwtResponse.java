@@ -1,7 +1,5 @@
 package com.example.resturant_management_system.model.response;
 
-import com.example.resturant_management_system.model.entities.Role;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

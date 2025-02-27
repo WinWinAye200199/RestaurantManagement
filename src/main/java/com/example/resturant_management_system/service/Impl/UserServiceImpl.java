@@ -48,23 +48,6 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class UserServiceImpl implements UserService{
 	
-//	private final UserRepository userRepository;
-//
-//	@Override
-//	public ApiResponse createUser(UserRequest userRequest) {
-//		if(userRequest.getPassword().equals(userRequest.getComfirmedPassword())) {
-//			User user = new User();
-//			user.setUsername(userRequest.getUsername());
-//			user.setPassword(userRequest.getPassword());
-//			List<String> roles = userRequest.getRoles();
-//			user.setRoles(roles);
-//			userRepository.save(user);
-//			return new ApiResponse(true, "Sign up Successfully!");
-//		}else {
-//			throw new BadRequestException("Mismatch password and comfirmed password!");
-//		}
-//		
-//	}
 	private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
@@ -134,69 +117,9 @@ public class UserServiceImpl implements UserService{
 		UserResponse response = userMapper.mapToResponse(userDto);
 		return response;
 	}
-//    @Override
-//    public UserResponse getUserProfile(UserPrincipal currentUser, LocalDate startDate, LocalDate endDate) {
-//        // Fetch the user
-//        User user = userRepository.findById(currentUser.getId())
-//                .orElseThrow(() -> new NotFoundException("User not found with ID: " + currentUser.getId()));
-//
-//        // If no date range is provided, default to last month's start and end
-//        if (startDate == null || endDate == null) {
-//            startDate = LocalDate.now().withDayOfMonth(1);  // First day of the current month
-//            endDate = LocalDate.now().withDayOfMonth(LocalDate.now().lengthOfMonth()); // Last day of the current month
-//        }
-//
-//        // Calculate salary for the user based on the given or default date range
-//        SalaryResponse salaryResponse = calculateSalary(user.getId(), startDate, endDate);
-//
-//        // Now, build the UserResponse including the salary
-//        UserResponse userResponse = new UserResponse(
-//            user.getId(),
-//            user.getName(),
-//            user.getEmail(),
-//            user.getRole(),
-//            salaryResponse.getTotalSalary(),  // Include salary in the profile
-//            salaryResponse.getTotalWorkedHours()
-//        );
-//
-//        return userResponse;
-//    }
 
-//    public SalaryResponse calculateSalary(Long userId, LocalDate startDate, LocalDate endDate) {
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
-//
-//        List<Attendance> attendanceRecords = attendanceRepository.findByUserIdAndDateBetween(userId, startDate, endDate);
-//
-//        double totalWorkedHours = attendanceRecords.stream()
-//                .mapToDouble(Attendance::getTotalHours)
-//                .sum();
-//
-//        double totalSalary = totalWorkedHours * user.getHourlyWage();
-//
-//        return new SalaryResponse(user.getId(), user.getName(), totalWorkedHours, user.getHourlyWage(), totalSalary);
-//    }
-
-//	@Override
-//	public ApiResponse createAttendance(long id,UserPrincipal currentUser) {
-//		User foundUser = userRepository.findByName(currentUser.getName()).orElseThrow(
-//				() -> new BadRequestException("Username Not Found : username -> " + currentUser.getUsername()));
-//		if( foundUser == null) {
-//			throw new NotFoundException("User is not existed!");
-//		}
-//		Attendance attendance = new Attendance();
-//		attendance.setDate(LocalDate.now());
-//		attendance.setClockIn(LocalTime.now());
-//		attendance.setUser(foundUser);
-//		attendanceRepository.save(attendance);
-//		return new ApiResponse(true,"Clock in successfully!");
-//	}
 	@Override
 	public ApiResponse createAttendance(long id, UserPrincipal currentUser) {
-//	    // Find the user by name
-//	    User foundUser = userRepository.findByName(currentUser.getName())
-//	            .orElseThrow(() -> new BadRequestException("Username Not Found: " + currentUser.getUsername()));
-//
 	    // Find the work schedule by ID
 	    WorkSchedule workSchedule = workScheduleRepository.findById(id)
 	            .orElseThrow(() -> new BadRequestException("WorkSchedule Not Found!"));
@@ -207,9 +130,7 @@ public class UserServiceImpl implements UserService{
 	        // Allow clock-in
 	        Attendance attendance = attendanceRepository.findById(id)
 	        		.orElseThrow(() -> new BadRequestException("Attendance Not Found!"));
-//	        attendance.setDate(LocalDate.now());
 	        attendance.setClockIn(LocalTime.now());
-//	        attendance.setUser(foundUser);
 	        attendanceRepository.save(attendance);
 
 	        if (!workSchedule.isFinish()) {
@@ -217,9 +138,6 @@ public class UserServiceImpl implements UserService{
 		        workScheduleRepository.save(workSchedule);
 		        }
 	        return new ApiResponse(true, "Clock in successfully!");
-//	    } else {
-//	        return new ApiResponse(false, "You can only clock in on your scheduled workday.");
-//	    }
 	}
 	@Override
 	public ApiResponse createClockOut(long workScheduleId, UserPrincipal currentUser) {
@@ -238,10 +156,6 @@ public class UserServiceImpl implements UserService{
 
 	    // Find the latest clock-in record for today
 	    Attendance attendance = attendanceService.findLastAttendance(foundUser);
-	    
-//	    if (attendance == null || attendance.getClockIn() == null) {
-//	        return new ApiResponse(false, "You must clock in before clocking out.");
-//	    }
 
 	    if (attendance.getClockOut() != null) {
 	        return new ApiResponse(false, "Already clocked out.");
@@ -261,32 +175,6 @@ public class UserServiceImpl implements UserService{
 	    return new ApiResponse(true, "Clock out successfully!");
 	}
 
-
-
-//	@Override
-//	public ApiResponse createClockOut(UserPrincipal currentUser) {
-//		 Attendance attendance = attendanceService.findLastAttendance(currentUser);
-//		    
-//		    if (attendance.getClockOut() != null) {
-//		        throw new BadRequestException("Already clocked out.");
-//		    }
-//
-//		    attendance.setDate(LocalDate.now());
-//		    attendance.setClockOut(LocalTime.now());
-//
-//		    // Calculate total hours worked with decimal precision
-//		    long minutesWorked = Duration.between(attendance.getClockIn(), attendance.getClockOut()).toMinutes();
-//		    double totalHoursWorked = minutesWorked / 60.0; // Convert minutes to decimal hours
-//		    attendance.setTotalHours(totalHoursWorked);
-//
-//		    attendanceService.save(attendance); // Save updated attendance
-//
-//		    // Update user's hourly wage based on total hours worked
-//		    updateUserHourlyWage(attendance.getUser());
-//
-//		    return new ApiResponse(true, "Clock out successfully!");
-//	}
-	
 	private void updateUserHourlyWage(User user) {
 	    List<Attendance> attendances = attendanceRepository.findByUser_Id(user.getId());
 
@@ -368,7 +256,7 @@ public class UserServiceImpl implements UserService{
                 .sum();
 
         // Calculate total salary
-        double totalSalary = totalWorkedHours * user.getHourlyWage();
+        double totalSalary = totalWorkedHours * user.getBasicSalary();
 
         return new SalaryResponse(totalWorkedHours, totalSalary);
     }

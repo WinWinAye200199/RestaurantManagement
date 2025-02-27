@@ -48,13 +48,6 @@ public class AuthController {
 		return savedUser;
 	}
 	
-//	@PutMapping("/reset-password")
-//	public ApiResponse resetPassword(@RequestBody UserRequest request) {
-//		UserDto userDto = userMapper.mapToDto(request);
-//		ApiResponse response = authService.resetPassword(userDto);
-//
-//		return response;
-//	}
 	// Step 1: Request Password Reset
     @PostMapping("/request-reset-password")
     public ApiResponse requestResetPassword(@RequestBody ResetRequest request){
